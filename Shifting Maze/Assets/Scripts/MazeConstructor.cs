@@ -10,6 +10,7 @@ public class MazeConstructor : MonoBehaviour
     [SerializeField] private Material treasureMat;
 
     private MazeDataGenerator dataGenerator;
+    private MazeMeshGenerator meshGenerator;
 
     // The data property. The access declarations (i.e. declaring the property as public but
     // then assigning private set) makes it read-only outside this class. Thus, maze data
@@ -26,6 +27,7 @@ public class MazeConstructor : MonoBehaviour
     void Awake()
     {
         dataGenerator = new MazeDataGenerator();
+        meshGenerator = new MazeMeshGenerator();
 
         // default to walls surrounding a single empty cell
         data = new int[,]
@@ -36,6 +38,7 @@ public class MazeConstructor : MonoBehaviour
         };
     }
 
+    // Generates the data for the maze.
     public void GenerateNewMaze(int sizeRows, int sizeCols)
     {
         if (sizeRows % 2 == 0 && sizeCols % 2 == 0)
@@ -44,6 +47,8 @@ public class MazeConstructor : MonoBehaviour
         }
 
         data = dataGenerator.FromDimensions(sizeRows, sizeCols);
+
+        DisplayMaze();
     }
 
     void OnGUI()
@@ -80,8 +85,25 @@ public class MazeConstructor : MonoBehaviour
             msg += "\n";
         }
 
-        // It prints outs the built-up string.
+        // It prints out the built-up string.
         GUI.Label(new Rect(20, 20, 500, 500), msg);
     }
 
+    // 
+    private void DisplayMaze()
+    {
+        GameObject go = new GameObject();
+        go.transform.position = Vector3.zero;
+        go.name = "Procedural Maze";
+        go.tag = "Generated";
+
+        MeshFilter mf = go.AddComponent<MeshFilter>();
+        mf.mesh = meshGenerator.FromData(data);
+
+        MeshCollider mc = go.AddComponent<MeshCollider>();
+        mc.sharedMesh = mf.mesh;
+
+        MeshRenderer mr = go.AddComponent<MeshRenderer>();
+        mr.materials = new Material[2] { mazeMat1, mazeMat2 };
+    }
 }
